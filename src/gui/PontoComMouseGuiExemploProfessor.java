@@ -39,6 +39,9 @@ public class PontoComMouseGuiExemploProfessor {
 		GraphicsContext gc;
 		gc = canvas.getGraphicsContext2D();
 
+		GraphicsContext gLittle;
+		gLittle = canvas.getGraphicsContext2D();
+
 		// Eventos de mouse
 		// trata mouseMoved
 		canvas.setOnMouseMoved(event -> {
@@ -54,13 +57,13 @@ public class PontoComMouseGuiExemploProfessor {
 				x = (int) event.getX();
 				y = (int) event.getY();
 				// desenha ponto na posicao clicada
-				desenharPonto(gc, x, y, 6, "P" + indicePonto, BLUE);
+				desenharPonto(gc, gLittle, x, y, 6, "P" + indicePonto, BLUE);
 				indicePonto++;
 			} else if (event.getButton() == MouseButton.SECONDARY) {
 				x = (int) event.getX();
 				y = (int) event.getY();
 				// desenha ponto na posicao clicada
-				desenharPonto(gc, x, y, 6, "(" + x + ", " + y + ")", Color.RED);
+				desenharPonto(gc, gLittle, x, y, 6, "(" + x + ", " + y + ")", Color.RED);
 			}
 		});
 
@@ -90,13 +93,13 @@ public class PontoComMouseGuiExemploProfessor {
 	 * @param cor
 	 *            cor do ponto
 	 */
-	public void desenharPonto(GraphicsContext g, int x, int y, int diametro, String nome, Color cor) {
+	public void desenharPonto(GraphicsContext g, GraphicsContext gLittle, int x, int y, int diametro, String nome, Color cor) {
 		PontoGr p;
 
 		// Cria um ponto
 		p = new PontoGr(x, y, cor, nome, diametro);
 
 		// Desenha o ponto
-		p.desenharPonto(g);
+		p.desenharPonto(g, gLittle);
 	}
 }

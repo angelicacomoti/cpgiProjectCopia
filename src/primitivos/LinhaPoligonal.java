@@ -3,19 +3,12 @@ package primitivos;
 import java.util.ArrayList;
 import java.util.List;
 
-import javax.xml.bind.annotation.XmlAccessorOrder;
-import javax.xml.bind.annotation.XmlAnyElement;
 import javax.xml.bind.annotation.XmlRootElement;
 
 import javafx.scene.paint.Color;
 
 @XmlRootElement(name = "LinhaPoligonal")	
 public class LinhaPoligonal extends Poligono{
-
-	public LinhaPoligonal() {
-		super();
-		// TODO Auto-generated constructor stub
-	}
 
 	public LinhaPoligonal(Color cor) {
 		super(cor);

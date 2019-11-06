@@ -7,7 +7,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
-import com.sun.jmx.mbeanserver.Repository.RegistrationContext;
 
 import calculadores.CalculadorGenerico;
 import calculadores.CirculoCalculador;
@@ -33,15 +32,17 @@ public class Desenhador {
 	private Color cor;
 	private int diametro;
 	private Canvas canvas;
+	private Canvas canvasLittle;
 	private Poligono poligonoEmDesenho;
 	private Map<TipoPrimitivo, List<Object>> objetosDesenhados;  
 	private Map<TipoPrimitivo, List<Integer>> indicesSelecionados;
 	private Rectangle2D areaRecorte;
 	
-	public Desenhador(Canvas canvas) {
-		this.diametro = 3;
+	public Desenhador(Canvas canvas, Canvas canvasLittle) {
+		this.diametro = 2;
 		this.cor = Color.BLACK;
 		this.canvas = canvas;
+		this.canvasLittle = canvasLittle;
 		this.inicilizarEstruturasManipulacaoDeDesenhos();
 	}
 	
@@ -51,14 +52,6 @@ public class Desenhador {
 
 	public void setObjetosDesenhados(Map<TipoPrimitivo, List<Object>> objetosDesenhados) {
 		this.objetosDesenhados = objetosDesenhados;
-	}
-
-	public Map<TipoPrimitivo, List<Integer>> getIndicesObjetosSelecionados() {
-		return indicesSelecionados;
-	}
-
-	public void setIndicesObjetosSelecionados(Map<TipoPrimitivo, List<Integer>> indicesObjetosParaApagar) {
-		this.indicesSelecionados = indicesObjetosParaApagar;
 	}
 
 	public Poligono getPoligonoEmDesenho() {
@@ -85,12 +78,6 @@ public class Desenhador {
 	public void setCor(Color cor) {
 		this.cor = cor;
 	}
-
-
-	public int getDiametro() {
-		return diametro;
-	}
-
 
 	public void setDiametro(int diametro) {
 		this.diametro = diametro;
@@ -142,21 +129,25 @@ public class Desenhador {
 		if (salvar) salvarPrimitivoDesenhado(TipoPrimitivo.CIRCULO, circulo);
 	}
 	
-	public void desenharRetangulo(Ponto pontoInicial, Ponto pontoFinal, boolean salvar) {
+	private void desenharRetangulo(Ponto pontoInicial, Ponto pontoFinal, boolean salvar) {
 		Retangulo retangulo = new Retangulo(pontoInicial, pontoFinal, cor);
 		desenharPontos(RetanguloCalculador.obterPontos(retangulo), cor);
 		if (salvar) salvarPrimitivoDesenhado(TipoPrimitivo.RETANGULO, retangulo);
 	}
 	
-	public void desenharAreaSelecao(Ponto pontoInicial, Ponto pontoFinal, boolean salvarAreaRecorte) {
+	private void desenharAreaSelecao(Ponto pontoInicial, Ponto pontoFinal, boolean salvarAreaRecorte) {
 		Retangulo retangulo = new Retangulo(pontoInicial, pontoFinal, cor);
 		List<Ponto> pontos = RetanguloCalculador.obterPontos(retangulo);
 		List<Ponto> pontosFiltrados = pontos.stream().filter(pt -> pontos.indexOf(pt)%10 == 0).collect(Collectors.toList());
 		desenharPontos(pontosFiltrados, cor);
 		if (salvarAreaRecorte) {
-			double largura = retangulo.getDiagonalMax().getx() - retangulo.getDiagonalMin().getx();
-			double altura = retangulo.getDiagonalMax().gety() - retangulo.getDiagonalMin().gety();
-			this.setAreaRecorte(new Rectangle2D(retangulo.getDiagonalMin().getx(), retangulo.getDiagonalMin().gety()+60, largura, altura));
+			double largura = Math.floor(retangulo.getDiagonalMax().getx() - retangulo.getDiagonalMin().getx() / 4.8);
+			double altura = Math.floor(retangulo.getDiagonalMax().gety() - retangulo.getDiagonalMin().gety() / 4.8);
+
+			double minX = Math.floor((retangulo.getDiagonalMin().getx() + 60) / 4.8);
+			double minY = Math.floor(retangulo.getDiagonalMin().gety() / 4.8);
+
+			this.setAreaRecorte(new Rectangle2D(minX, minY, largura, altura));
 		}
 	}
 	
@@ -181,15 +172,15 @@ public class Desenhador {
 		this.desenharPonto(x, y, "", cor);
 	}
 
-	public void desenharPonto(int x, int y, String nome, Color cor) {
+	private void desenharPonto(int x, int y, String nome, Color cor) {
 		PontoGr p;
 		// Cria um ponto
 		p = new PontoGr(x, y, cor, nome, diametro);
 		// Desenha o ponto
-		p.desenharPonto(canvas.getGraphicsContext2D());
+		p.desenharPonto(canvas.getGraphicsContext2D(), canvasLittle.getGraphicsContext2D());
 	}
 	
-	public void salvarPrimitivoDesenhado(TipoPrimitivo tipoPrimitivo,Object primitivo){
+	private void salvarPrimitivoDesenhado(TipoPrimitivo tipoPrimitivo,Object primitivo){
 		objetosDesenhados.get(tipoPrimitivo).add(primitivo);
 	}
 	
@@ -200,14 +191,13 @@ public class Desenhador {
 	public void desenharObjetosArmazenados(Color novaCor){
 		// apaga canvas
 		canvas.getGraphicsContext2D().clearRect(0, 0, canvas.getWidth(), canvas.getHeight());
-		
+		canvasLittle.getGraphicsContext2D().clearRect(0, 0, canvasLittle.getWidth(), canvasLittle.getHeight());
+
 		//desenha todos os objetos
 		objetosDesenhados.forEach((tipoPrimitivo, objetos) -> {
 			for(Object desenho : objetos){
 				//verifica se objeto esta selecionado
-				boolean selecionado = (this.indicesSelecionados.get(tipoPrimitivo).contains(objetos.indexOf(desenho)))
-						? true
-						: false;
+				boolean selecionado = (this.indicesSelecionados.get(tipoPrimitivo).contains(objetos.indexOf(desenho)));
 				Color cor;
 				switch (tipoPrimitivo) {
 					case RETA:
@@ -234,17 +224,6 @@ public class Desenhador {
 				}
 			}
 		});
-	}
-	
-	public void limparObjetosSelecionados() {
-		indicesSelecionados.forEach((tipoPrimitivo, indices)->{
-			indices.clear();
-		});
-		desenharObjetosArmazenados(Color.WHITE);
-	}
-	
-	public void salvarObjetoDesenhado(TipoPrimitivo tipoPrimitivo,Object primitivo) {
-		this.objetosDesenhados.get(tipoPrimitivo).add(primitivo);
 	}
 	
 	public boolean isPoligonoElasticoEmDesenho() {

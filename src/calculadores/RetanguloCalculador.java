@@ -3,8 +3,6 @@ package calculadores;
 import java.util.ArrayList;
 import java.util.List;
 
-import com.sun.management.DiagnosticCommandMBean;
-
 import primitivos.Ponto;
 import primitivos.Reta;
 import primitivos.Retangulo;
@@ -38,17 +36,5 @@ public class RetanguloCalculador {
 		
 		return pontos;
 		
-	}
-	
-	public static double calcularDistanciaPontoRetasRetangulo(Ponto pt, Retangulo retangulo){
-		
-		List<Reta> retas = obterRetas(retangulo);
-		double distancia = 100000;
-		// verifica qual reta mais proxima do ponto 
-		for (Reta reta: retas){
-			double distanciaPontoRetaAtual = (RetaCalculador.calcularDistanciaPontoReta(pt, reta));
-			distancia =  (distanciaPontoRetaAtual < distancia)? distanciaPontoRetaAtual :distancia;
-		}
-		return distancia;
 	}
 }

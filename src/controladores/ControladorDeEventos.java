@@ -1,105 +1,47 @@
 package controladores;
 
-import java.awt.image.RenderedImage;
-import java.io.File;
-import java.nio.Buffer;
-import java.nio.ByteBuffer;
-import java.nio.IntBuffer;
-import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
-import javax.imageio.ImageIO;
-import com.sun.javafx.geom.transform.Affine3D;
-import com.sun.javafx.geom.transform.GeneralTransform3D;
-import com.sun.javafx.sg.prism.NGNode;
-
-import calculadores.CirculoCalculador;
 import calculadores.CurvaDoDragaoCalculador;
-import calculadores.PoligonoCalculador;
 import calculadores.RetaCalculador;
-import calculadores.RetanguloCalculador;
 import gui.Desenhador;
-import gui.TelaClipping;
-import gui.TelaPrincipal;
-import gui.TransformadorGeometrico;
-import javafx.embed.swing.SwingFXUtils;
-import javafx.geometry.Rectangle2D;
-import javafx.scene.Camera;
 import javafx.scene.SnapshotParameters;
 import javafx.scene.canvas.Canvas;
 import javafx.scene.control.Alert;
 import javafx.scene.control.Alert.AlertType;
 import javafx.scene.control.ButtonType;
-import javafx.scene.image.PixelFormat;
-import javafx.scene.image.PixelReader;
 import javafx.scene.image.WritableImage;
-import javafx.scene.image.WritablePixelFormat;
 import javafx.scene.input.MouseButton;
 import javafx.scene.input.MouseEvent;
 import javafx.scene.paint.Color;
-import javafx.stage.Stage;
-import primitivos.Circulo;
 import primitivos.LinhaPoligonal;
 import primitivos.Poligono;
 import primitivos.Ponto;
 import primitivos.Reta;
-import primitivos.Retangulo;
-import transformadoresGeometricos.TipoTransformacao;
 
 public class ControladorDeEventos {
 
 	private int iteracoesCurvaDragao;
 	private Canvas canvas;
+	private Canvas canvasLittle;
 	private TipoDesenho tipoDesenho;
-	private TipoTransformacao tipoTransformacao;
 	private Ponto pontoAtual;
 	private WritableImage backup;
+	private WritableImage backupLittle;
 	private boolean fimElastico;
 	private Desenhador desenhador;
-	private TransformadorGeometrico transformadorGeometrico;
-	private boolean transformacaoEmAndamento;
-	
-	public ControladorDeEventos(Canvas canvas) {
+
+	public ControladorDeEventos(Canvas canvas, Canvas canvasLittle) {
 		super();
 		this.canvas = canvas;
+		this.canvasLittle = canvasLittle;
 		this.iteracoesCurvaDragao = 0;
 		fimElastico = true;
-		this.desenhador = new Desenhador(this.canvas);
-		this.transformadorGeometrico = new TransformadorGeometrico();
+		this.desenhador = new Desenhador(this.canvas, this.canvasLittle);
 	}
 	
-	public TipoTransformacao getTipoTransformacao() {
-		return tipoTransformacao;
-	}
-	
-	public void setTipoTransformacao(TipoTransformacao tipoTransformacao) {
-		this.setTransformacaoEmAndamento(true);
-		this.tipoTransformacao = tipoTransformacao;
-	}
-	
-	public TransformadorGeometrico getTransformadorGeometrico() {
-		return transformadorGeometrico;
-	}
-
-	public void setTransformadorGeometrico(TransformadorGeometrico transformadorGeometrico) {
-		this.transformadorGeometrico = transformadorGeometrico;
-	}
-
-	public boolean isTransformacaoEmAndamento() {
-		return transformacaoEmAndamento;
-	}
-
-	public void setTransformacaoEmAndamento(boolean transformacaoEmAndamento) {
-		this.transformacaoEmAndamento = transformacaoEmAndamento;
-	}
 	public Desenhador getDesenhador() {
 		return desenhador;
-	}
-
-	public void setDesenhador(Desenhador desenhador) {
-		this.desenhador = desenhador;
 	}
 
 	public void setTipoDesenho(TipoDesenho tipoDesenho) {
@@ -109,9 +51,7 @@ public class ControladorDeEventos {
 	
 	public void onCanvasMousePressed(MouseEvent event) {
 		Ponto pontoClicado = new Ponto(event.getX(), event.getY());
-		if (transformacaoEmAndamento){
-			onCanvasMousePressedTransformacao(event, pontoClicado);
-		}else if (tipoDesenho != null){
+		if (tipoDesenho != null){
 			onCanvasMousePressedDesenho(event, pontoClicado);
 		}
 	}
@@ -154,64 +94,15 @@ public class ControladorDeEventos {
 		}
 		salvarCanvas();
 	}
-	
-	public void onCanvasMousePressedSelecionarPrimitivo(Ponto pontoClicado){
-		
-		if(this.desenhador.getPoligonoEmDesenho() != null) {
-			this.desenhador.salvarPoligonoDesenhado(TipoPrimitivo.LINHA_POLIGONAL);
-		} 
-		
-		// Iterando sobre objetos jï¿½ desenhados
-		this.desenhador.getObjetosDesenhados().forEach((tipoPrimitivo, desenhos)->{
-			
-			for(Object desenho : desenhos){
-				double distancia = 0;
-				// calcular distancia do ponto pro objeto
-				switch (tipoPrimitivo) {
-					case RETA:
-						distancia = RetaCalculador.calcularDistanciaPontoReta(pontoClicado, (Reta)desenho);
-						break;
-					case RETANGULO:
-						distancia = RetanguloCalculador.calcularDistanciaPontoRetasRetangulo(pontoClicado, (Retangulo)desenho);
-						break;
-					case POLIGONO:
-					case LINHA_POLIGONAL:
-						distancia = PoligonoCalculador.calcularDistanciaPontoRetasPoligono(pontoClicado, (Poligono) desenho);
-						break;
-					case CIRCULO:
-						distancia = CirculoCalculador.calcularDistanciaPontoCirculo(pontoClicado, (Circulo) desenho);
-						break;
-				}
-				//guarda objeto para remoï¿½ï¿½o posterior
-				if (distancia < 7.00){
-					if (this.isTransformacaoEmAndamento()){
-						this.transformadorGeometrico.setFigura(desenho);
-						//garantindo que apenas um indice estará selecionado
-						this.desfazerSelecao();
-					}
-					//verifica se já não existe na lista de remoção
-					if (!this.desenhador.getIndicesObjetosSelecionados().get(tipoPrimitivo).contains(desenhos.indexOf(desenho))){
-						this.desenhador.getIndicesObjetosSelecionados().get(tipoPrimitivo).add(desenhos.indexOf(desenho));
-					}
-				}
-			}
-		});
-		this.desenhador.desenharObjetosArmazenados(Color.DARKRED);
-		resetCanvas();
-		resetPoligonoEmDesenho();
-	}
 		
 	public void onMouseDraggedPrimitivosElasticos(MouseEvent event) {
 		if (event.getButton() == MouseButton.PRIMARY) {
-			if (fimElastico == false) {
+			if (!fimElastico) {
 				// Seta canvas para estado capturado quando o mouse foi pressionado
 				canvas.getGraphicsContext2D().drawImage(backup, 0, 0);
+				canvasLittle.getGraphicsContext2D().drawImage(backupLittle, 0, 0);
 				// Desenha sobre o "estado" capturado quando mouse foi pressionado		
 				Ponto ptFinal = new Ponto(event.getX(), event.getY());
-//				if (isPoligonoElastico()&& !this.desenhador.getPoligonoEmDesenho().getRetas().isEmpty()){
-//					//retirando retas desenhadas no dragged
-//					this.desenhador.getPoligonoEmDesenho().removerReta(this.desenhador.getPoligonoEmDesenho().getRetas().size()-1);
-//				}
 				this.desenhador.desenharPrimitivoElastico(pontoAtual,ptFinal, tipoDesenho, fimElastico);
 				fimElastico = false;
 			}
@@ -220,17 +111,13 @@ public class ControladorDeEventos {
 
 	public void onMouseReleasedPrimitivosElasticos(MouseEvent event) {
 		if (event.getButton() == MouseButton.PRIMARY) {
-			if (fimElastico == false) {
+			if (!fimElastico) {
 				Ponto ptFinal = new Ponto(event.getX(), event.getY());
 				//Atualiza se nï¿½o estiver desenhando poligono elastico 
-				fimElastico =  (isPoligonoElastico())
-								? false
-								: true;
+				fimElastico =  !isPoligonoElastico();
 				this.desenhador.desenharPrimitivoElastico(pontoAtual,ptFinal,tipoDesenho, (fimElastico || isPoligonoElastico()) );
 				//Se estiver desenhando poligono elastico, precisa usar o ultimo ponto para desenhar a proxima reta
-				pontoAtual = (isPoligonoElastico())
-								? ptFinal 
-								: null;
+				pontoAtual = (isPoligonoElastico()) ? ptFinal : null;
 			}
 		}
 	}
@@ -248,7 +135,9 @@ public class ControladorDeEventos {
 	
 	private void preencherCanvasCurvaDoDragao() {
 		
-		canvas.getGraphicsContext2D().clearRect(0, 0, canvas.getWidth(), canvas.getHeight());
+		canvas.getGraphicsContext2D().clearRect(0, 0, canvas.getWidth(), canvas.getHeight()); //
+		canvasLittle.getGraphicsContext2D().clearRect(0, 0, canvasLittle.getWidth(), canvasLittle.getHeight()); //
+
 		Reta reta = new Reta(new Ponto(150, 400), new Ponto(600, 400), this.desenhador.getCor());
 		CurvaDoDragaoCalculador calc = new CurvaDoDragaoCalculador(reta, this.iteracoesCurvaDragao);
 		List<Reta> retasCurvaDragao;
@@ -270,9 +159,6 @@ public class ControladorDeEventos {
 				case CURVA_DO_DRAGAO:
 					desenharCurvaDoDragao();
 					break;
-				case SELECIONA_DESENHO:
-					onCanvasMousePressedSelecionarPrimitivo(pontoClicado);
-					break;					
 				case PONTO:
 					this.desenhador.desenharPonto((int) Math.floor(event.getX()), (int) Math.floor(event.getY()));
 					break;
@@ -306,17 +192,6 @@ public class ControladorDeEventos {
 			resetPoligonoEmDesenho();
 		}
 	}
-	
-	private void onCanvasMousePressedTransformacao(MouseEvent event, Ponto pontoClicado){
-		switch(tipoTransformacao){
-			case SELECAO_FIGURA:
-				onCanvasMousePressedSelecionarPrimitivo(pontoClicado);
-				break;
-			case SELECAO_PONTO:
-				this.transformadorGeometrico.setPontoReferecia(pontoClicado);
-				break;	
-		}
-	}
 		
 	public void getEventoBasicoMenuDesenho(TipoDesenho desenho) {
 		tipoDesenho = desenho;
@@ -325,6 +200,7 @@ public class ControladorDeEventos {
 	
 	public void limparCanvas() {
 		canvas.getGraphicsContext2D().clearRect(0, 0, canvas.getWidth(), canvas.getHeight());
+		canvasLittle.getGraphicsContext2D().clearRect(0, 0, canvasLittle.getWidth(), canvasLittle.getHeight());
 		this.desenhador.inicilizarEstruturasManipulacaoDeDesenhos();
 		resetCanvas();
 		resetPoligonoEmDesenho();
@@ -335,27 +211,30 @@ public class ControladorDeEventos {
 		SnapshotParameters params = new SnapshotParameters();
 		params.setFill(Color.WHITE);
 		backup = canvas.snapshot(params, backup);
+		backupLittle = canvasLittle.snapshot(params, backupLittle);
 	}
 	
 	public void recortar(){
 		if (this.getDesenhador().getObjetosDesenhados().size() > 0) {
-			setTransformacaoEmAndamento(false);
 			canvas.getGraphicsContext2D().drawImage(backup,0,0);
+			canvasLittle.getGraphicsContext2D().drawImage(backupLittle,0,0);
+
 			SnapshotParameters params = new SnapshotParameters();
 			params.setViewport(this.desenhador.getAreaRecorte());
-			WritableImage recorte = canvas.snapshot(params,null);
-			new TelaClipping(new Stage(), recorte).desenharTela();
+			WritableImage imagemRecortada = canvasLittle.snapshot(params,null);
+
+			canvasLittle.getGraphicsContext2D().clearRect(0, 0, imagemRecortada.getWidth(), imagemRecortada.getHeight());
+			canvasLittle.getGraphicsContext2D().drawImage(imagemRecortada,0,0);
 		}
 	}
 	
-	public void resetCanvas(){
+	private void resetCanvas(){
 		fimElastico = true;
 		pontoAtual = null;
 		iteracoesCurvaDragao = 0;
-		setTransformacaoEmAndamento(false);
 	}
 	
-	public void resetPoligonoEmDesenho() {
+	private void resetPoligonoEmDesenho() {
 		this.desenhador.setPoligonoEmDesenho(null);
 	}
 		
@@ -363,38 +242,6 @@ public class ControladorDeEventos {
 		return tipoDesenho.equals(TipoDesenho.POLIGONO_ELASTICO) || (tipoDesenho.equals(TipoDesenho.RETA_POLIGONAL));
 	}
 	
-	public void desfazerSelecao() {
-		this.desenhador.limparObjetosSelecionados();
-	}
-	
-	public void apagarPrimitivos(){		
-		if (!this.desenhador.getIndicesObjetosSelecionados().isEmpty()){
-			Map<TipoPrimitivo, List<Object>> objetosDesenhadosAtualizados = copiaDesenhos(this.desenhador.getObjetosDesenhados()); 
-			this.desenhador.getIndicesObjetosSelecionados().forEach((tipoPrimitivo, listaIndices) -> {
-				for (int indice : listaIndices){
-					// remove primitivo da estrutura que guarda os objetos desenhados
-					Object objetoParaRemover = this.desenhador.getObjetosDesenhados().get(tipoPrimitivo).get(indice);
-					objetosDesenhadosAtualizados.get(tipoPrimitivo).remove(objetoParaRemover);
-				}				
-			});
-			this.desenhador.setObjetosDesenhados(objetosDesenhadosAtualizados);
-		}
-		desfazerSelecao();
-	}
-	
-	// cria copia da lista de objetos desenhados para manipular os indices sem perda de dados 
-	private Map<TipoPrimitivo, List<Object>> copiaDesenhos(Map<TipoPrimitivo, List<Object>> objetosDesenhados){
-		Map<TipoPrimitivo, List<Object>> objetosDesenhadosAtualizados = new HashMap<>();
-		objetosDesenhados.forEach((tipo, lista)->{
-			List<Object> listaAuxiliar = new ArrayList<>();
-			for ( Object desenho : lista){
-				listaAuxiliar.add(desenho);
-			}
-			objetosDesenhadosAtualizados.put(tipo,listaAuxiliar);
-		});
-		return objetosDesenhadosAtualizados;
-	}
-
 	public void desfazerSelecaoClipping() {
 		if(this.desenhador.getPoligonoEmDesenho() != null) {
 			this.desenhador.salvarPoligonoDesenhado(TipoPrimitivo.LINHA_POLIGONAL);

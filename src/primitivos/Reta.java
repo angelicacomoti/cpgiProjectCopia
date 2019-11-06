@@ -9,7 +9,6 @@ import javax.xml.bind.annotation.XmlTransient;
 
 import javafx.scene.paint.Color;
 
-import java.beans.Transient;
 import java.io.Serializable;
 
 /**
@@ -72,7 +71,7 @@ public class Reta implements Serializable {
 		return a;
 	}
 
-	// Esse SET só deve ser utilizado pela api de leitura de xml
+	// Esse SET sï¿½ deve ser utilizado pela api de leitura de xml
 	public void setA(Ponto a) {
 		if (this.a == null)
 			this.a = a;
@@ -94,8 +93,6 @@ public class Reta implements Serializable {
 		this.b = b;
 	}
 
-	@XmlTransient
-	//@XmlElement(name = "CoeficienteAngular")
 	public Double getCoeficienteAngular() {
 		return coeficienteAngular;
 	}

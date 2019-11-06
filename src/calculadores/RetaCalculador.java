@@ -3,9 +3,7 @@ package calculadores;
 import java.util.ArrayList;
 import java.util.List;
 
-import javafx.scene.canvas.GraphicsContext;
 import primitivos.Ponto;
-import primitivos.PontoGr;
 import primitivos.Reta;
 
 public class RetaCalculador {
@@ -123,27 +121,7 @@ public class RetaCalculador {
 		return pontos;
 	}
 	
-	public static double calcularDistanciaPontoReta(Ponto pt, Reta reta) {
-
-		// Precisa da equação da reta
-		/*
-		 * y1 – y2 = a 
-		 * x2 – x1 = b
-		 * x1y2 – x2y1 = c 
-		 * A equação geral da reta: ax + by + c = 0 
-		*/
-		double a = reta.getA().gety() - reta.getB().gety();
-		double b = reta.getB().getx() - reta.getA().getx();;
-		double c = (reta.getA().getx()*reta.getB().gety() - (reta.getB().getx()*reta.getA().gety()));
-		
-		// Fórmula de cálculo da distância
-		// d = |ax0 + by0 + c| / sqrt(a2 + b2)
-		
-		double distancia = Math.abs((a*pt.getx())+b*pt.gety()+c) / Math.sqrt(Math.pow(a, 2)+Math.pow(b, 2));	
-		return (validaDistanciaPontoSegmentorDeReta(pt, reta)) ? distancia : distancia+10;
-	}
-	
-	// Verifica se ponto pertence a reta mas não ao segmento desenhado
+	// Verifica se ponto pertence a reta mas nï¿½o ao segmento desenhado
 	private static boolean validaDistanciaPontoSegmentorDeReta(Ponto pt, Reta reta) {
 		
 		double tamanhoReta = CalculadorGenerico.obterDistanciaEntreDoisPontos(reta.getA(), reta.getB());

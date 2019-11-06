@@ -19,16 +19,5 @@ public class PoligonoCalculador {
 		}
 		
 		return pontos;
-		
-	}
-	
-	public static double calcularDistanciaPontoRetasPoligono(Ponto pt, Poligono poligono){
-		double distancia = 100000;
-		// verifica qual reta mais proxima do ponto 
-		for (Reta reta: poligono.getRetas()){
-			double distanciaPontoRetaAtual = (RetaCalculador.calcularDistanciaPontoReta(pt, reta));
-			distancia =  (distanciaPontoRetaAtual < distancia)? distanciaPontoRetaAtual :distancia;
-		}
-		return distancia;
 	}
 }

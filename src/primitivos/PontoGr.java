@@ -1,12 +1,6 @@
 package primitivos;
 
-import com.sun.javafx.geom.BaseBounds;
-import com.sun.javafx.geom.transform.BaseTransform;
-import com.sun.javafx.scene.BoundsAccessor;
-
-import javafx.scene.Node;
 import javafx.scene.canvas.GraphicsContext;
-import javafx.scene.effect.Effect;
 import javafx.scene.paint.Color;
 
 /**
@@ -30,8 +24,6 @@ public class PontoGr extends Ponto {
 	 *            coordenada y
 	 * @param cor
 	 *            cor do ponto a ser construido
-	 * @param diametro
-	 *            diametro do ponto
 	 */
 	public PontoGr(int x, int y, Color cor) {
 		super((double) x, (double) y);
@@ -93,8 +85,6 @@ public class PontoGr extends Ponto {
 	 *            cor do ponto a ser construido
 	 * @param nomeP
 	 *            nome do ponto
-	 * @param diametro
-	 *            diametro do ponto
 	 */
 	public PontoGr(int x, int y, Color cor, String nomeP) {
 		super((double) x, (double) y);
@@ -123,8 +113,6 @@ public class PontoGr extends Ponto {
 
 	/**
 	 * Constroi um ponto na posicao 0, 0 com diametro e cor Black
-	 *
-	 * @param diametro
 	 */
 	public PontoGr(int x, int y) {
 		super((double) x, (double) y);
@@ -135,8 +123,6 @@ public class PontoGr extends Ponto {
 
 	/**
 	 * Constroi um ponto na posicao 0, 0 com diametro e cor Black
-	 *
-	 * @param diametro
 	 */
 	public PontoGr(int diametro) {
 		super(0, 0);
@@ -184,16 +170,31 @@ public class PontoGr extends Ponto {
 	 *
 	 * @param g
 	 *            contexto grafico
+	 * @param gLittle
+	 *            contexto grafico do canvasLittle
 	 */
-	public void desenharPonto(GraphicsContext g) {
+	public void desenharPonto(GraphicsContext g, GraphicsContext gLittle) {
 		// desenha ponto como um oval
+
+		int eixoX = (int) getx() - (getDiametro() / 2);
+		int eixoY = (int) gety() - (getDiametro() / 2);
+
 		g.setFill(getCor());
-		g.fillOval((int) getx() - (getDiametro() / 2), (int) gety() - (getDiametro() / 2), getDiametro(),
-				getDiametro());
+		g.fillOval( eixoX,  eixoY, getDiametro(), getDiametro());
+
+		gLittle.setFill(getCor());
+		gLittle.fillOval( (int) Math.floor(eixoX/4.8), (int) Math.floor(eixoY/4.8), getDiametro(), getDiametro());
+
+
+		int eixoXNome= (int)  getx() + getDiametro();
+		int eixoYNome = (int) gety();
 
 		// desenha nome do ponto
 		g.setFill(getCorStr());
-		g.strokeText(getStr(), (int) getx() + getDiametro(), (int) gety());
-		
+		g.strokeText(getStr(), eixoXNome, eixoYNome);
+
+		// desenha nome do ponto
+		gLittle.setFill(getCorStr());
+		gLittle.strokeText(getStr(), (int) Math.floor(eixoXNome/4.8), (int) Math.floor(eixoYNome/4.8));
 	}
 }
