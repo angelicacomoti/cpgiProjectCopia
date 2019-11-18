@@ -10,9 +10,9 @@ import javafx.scene.paint.Color;
 public class Poligono {
 	protected List<Reta> retas;
 	private Color cor;
-	private Reta reta; 
-	
-	public Poligono() { 
+	private Reta reta;
+
+	public Poligono() {
 		this.retas = new ArrayList<>();
 		this.reta  = new Reta();
 	}
@@ -53,7 +53,7 @@ public class Poligono {
 	@XmlAnyElement(lax = true)
 	public List<Object> getPontos() {
 		if (retas != null ){
-			List<Object> pontos = new ArrayList<>();				
+			List<Object> pontos = new ArrayList<>();
 			this.retas.forEach(reta -> {
 				pontos.add(reta.getA());
 			});
@@ -61,12 +61,12 @@ public class Poligono {
 		}
 		return new ArrayList<>();
 	}
-	
+
 	@XmlElement(name="Ponto")
 	public Ponto getPonto(){
 		return null;
 	}
-	
+
 	public void setPonto(Ponto ponto) {
 		if (this.reta != null){
 			if (reta.getA() == null){
@@ -79,7 +79,7 @@ public class Poligono {
 					// Tem reta, mas vai construir nova
 					reta.setPontoA(reta.getB());
 					reta.setB(ponto);
-				}	
+				}
 				this.retas.add(new Reta(reta.getA(), reta.getB()));
 			}
 		}

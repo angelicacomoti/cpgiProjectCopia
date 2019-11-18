@@ -14,4 +14,5 @@ public class AlertaPersonalizado {
 		if(result.get() == ButtonType.YES)
 		     alertaImpl.alertaCallbak();
 	}
+
 }

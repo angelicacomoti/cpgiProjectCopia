@@ -1,5 +1,6 @@
 package primitivos;
 
+import javax.xml.bind.annotation.XmlAttribute;
 import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlRootElement;
 import javax.xml.bind.annotation.XmlTransient;
@@ -30,7 +31,7 @@ public class Circulo implements Serializable {
 	public void setRaio(int raio) {
 		this.raio = raio;
 	}
-	
+
 	@XmlElement(name = "Raio")
 	public double getRaioNormalizado() {
 		return (this.raio + 0.0) / TelaPrincipal.LARGURA_CANVAS;

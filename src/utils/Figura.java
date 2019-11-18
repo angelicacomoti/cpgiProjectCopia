@@ -41,7 +41,6 @@ public class Figura implements Serializable {
 		this.todosObjetosDesenhados.forEach((obj) -> {
 			switch (obj.getClass().getSimpleName()){
 				case "Reta":
-					//listaAtual.set(objetos.get(TipoPrimitivo.RETA));
 					objetos.get(TipoPrimitivo.RETA).add(obj);
 					break;
 				case "Poligono":
@@ -63,4 +62,5 @@ public class Figura implements Serializable {
 
 		return objetos;
 	}
+
 }

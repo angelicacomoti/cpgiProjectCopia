@@ -7,7 +7,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
-
 import calculadores.CalculadorGenerico;
 import calculadores.CirculoCalculador;
 import calculadores.PoligonoCalculador;
@@ -141,11 +140,11 @@ public class Desenhador {
 		List<Ponto> pontosFiltrados = pontos.stream().filter(pt -> pontos.indexOf(pt)%10 == 0).collect(Collectors.toList());
 		desenharPontos(pontosFiltrados, cor);
 		if (salvarAreaRecorte) {
-			double largura = Math.floor(retangulo.getDiagonalMax().getx() - retangulo.getDiagonalMin().getx() / 4.8);
-			double altura = Math.floor(retangulo.getDiagonalMax().gety() - retangulo.getDiagonalMin().gety() / 4.8);
+			double largura = Math.floor(retangulo.getDiagonalMax().getx() - retangulo.getDiagonalMin().getx() / 5);
+			double altura = Math.floor(retangulo.getDiagonalMax().gety() - retangulo.getDiagonalMin().gety() / 5);
 
-			double minX = Math.floor((retangulo.getDiagonalMin().getx() + 60) / 4.8);
-			double minY = Math.floor(retangulo.getDiagonalMin().gety() / 4.8);
+			double minX = Math.floor((retangulo.getDiagonalMin().getx() + 60) / 5);
+			double minY = Math.floor(retangulo.getDiagonalMin().gety() / 5);
 
 			this.setAreaRecorte(new Rectangle2D(minX, minY, largura, altura));
 		}
@@ -156,7 +155,6 @@ public class Desenhador {
 		if (addReta) { 
 			poligonoEmDesenho.addReta(reta);
 		}else {
-			// Corrigindo desenho de retas no dragged
 			desenharReta(reta.getA(), reta.getB(), false);
 		}
 		desenharPontos(PoligonoCalculador.obterPontos(poligonoEmDesenho), cor);
@@ -172,11 +170,9 @@ public class Desenhador {
 		this.desenharPonto(x, y, "", cor);
 	}
 
-	private void desenharPonto(int x, int y, String nome, Color cor) {
+	public void desenharPonto(int x, int y, String nome, Color cor) {
 		PontoGr p;
-		// Cria um ponto
 		p = new PontoGr(x, y, cor, nome, diametro);
-		// Desenha o ponto
 		p.desenharPonto(canvas.getGraphicsContext2D(), canvasLittle.getGraphicsContext2D());
 	}
 	
@@ -189,14 +185,11 @@ public class Desenhador {
 	}
 	
 	public void desenharObjetosArmazenados(Color novaCor){
-		// apaga canvas
 		canvas.getGraphicsContext2D().clearRect(0, 0, canvas.getWidth(), canvas.getHeight());
 		canvasLittle.getGraphicsContext2D().clearRect(0, 0, canvasLittle.getWidth(), canvasLittle.getHeight());
 
-		//desenha todos os objetos
 		objetosDesenhados.forEach((tipoPrimitivo, objetos) -> {
 			for(Object desenho : objetos){
-				//verifica se objeto esta selecionado
 				boolean selecionado = (this.indicesSelecionados.get(tipoPrimitivo).contains(objetos.indexOf(desenho)));
 				Color cor;
 				switch (tipoPrimitivo) {

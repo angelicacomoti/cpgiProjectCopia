@@ -17,10 +17,6 @@ public class XMLParser<T>{
 		this.file = file;
 	}
 	
-	public XMLParser(String src) throws FileNotFoundException, IOException, Exception{
-		this.file = new File(src);
-	}
-	
 	public T toObject(Class[] classList) throws JAXBException {
 	    JAXBContext jaxbContext       = JAXBContext.newInstance(classList);
 	    Unmarshaller jaxbUnmarshaller = jaxbContext.createUnmarshaller();
@@ -31,11 +27,11 @@ public class XMLParser<T>{
 	
 	
 	public void saveFile(T object, Class[] classList) throws JAXBException {
-		//JAXBContext jaxbContext   = JAXBContext.newInstance(object.getClass());
 		JAXBContext jaxbContext   = JAXBContext.newInstance(classList);
 	    Marshaller jaxbMarshaller = jaxbContext.createMarshaller();
 	    jaxbMarshaller.setProperty(Marshaller.JAXB_FORMATTED_OUTPUT, true);
 	    jaxbMarshaller.marshal(object, System.out);
 	    jaxbMarshaller.marshal(object, this.file);
-	} 
+	}
+
 }

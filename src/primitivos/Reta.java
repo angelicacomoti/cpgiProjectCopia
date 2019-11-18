@@ -9,11 +9,9 @@ import javax.xml.bind.annotation.XmlTransient;
 
 import javafx.scene.paint.Color;
 
+import java.beans.Transient;
 import java.io.Serializable;
 
-/**
- * @author ra00170556
- */
 
 @SuppressWarnings("restriction")
 @XmlRootElement(name = "Reta")
@@ -52,7 +50,7 @@ public class Reta implements Serializable {
 		this.cor = null;
 		this.calcularCoeficienteAngular(a, b);
 	}
-	
+
 	public Reta(Ponto a, Ponto b, Color cor) {
 		super();
 		this.a = a;
@@ -78,7 +76,7 @@ public class Reta implements Serializable {
 		else
 			this.b = a;
 	}
-	
+
 	@XmlTransient
 	public void setPontoA(Ponto a) {
 		this.a = a;
@@ -93,6 +91,8 @@ public class Reta implements Serializable {
 		this.b = b;
 	}
 
+	@XmlTransient
+	//@XmlElement(name = "CoeficienteAngular")
 	public Double getCoeficienteAngular() {
 		return coeficienteAngular;
 	}

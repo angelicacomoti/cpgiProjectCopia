@@ -3,6 +3,7 @@ import java.io.File;
 
 import controladores.ControladorDeEventos;
 import controladores.TipoDesenho;
+import controladores.TipoFiltro;
 import javafx.geometry.Insets;
 import javafx.scene.Scene;
 import javafx.scene.canvas.Canvas;
@@ -28,9 +29,13 @@ import utils.XMLParser;
 public class TelaPrincipal {
 
 	private Stage palco;
-	private VBox menu;
+	private VBox menuAcoes;
 
-    private Button pontos;
+	private Button filtroAlta;
+	private Button filtroBaixa;
+	private Button filtroCinza;
+
+	private Button pontos;
 	private Button retas;
 	private Button circulos;
 
@@ -58,9 +63,19 @@ public class TelaPrincipal {
 	private Canvas canvasLittle;
 	private ControladorDeEventos controladorDeEventos;
 	private FileChooser fileChooser;
-	
-	public static int LARGURA_CANVAS = 1230;
-	public static int ALTURA_CANVAS = 700;
+
+	public static int LARGURA_MENU = 270;
+
+	public static int LARGURA_CANVAS = 1100;
+	public static int ALTURA_CANVAS = 800;
+
+	public static int LARGURA_CANVAS_LITTLE = LARGURA_CANVAS / 5;
+	public static int ALTURA_CANVAS_LITTLE = ALTURA_CANVAS / 5;
+
+	public static int LARGURA_PALCO = LARGURA_CANVAS + LARGURA_MENU;
+	public static int ALTURA_PALCO = ALTURA_CANVAS;
+
+
 					
 
 	public TelaPrincipal(Stage palco) {
@@ -70,17 +85,19 @@ public class TelaPrincipal {
 
 	public void desenharTela(){
 			
-		palco.setWidth(LARGURA_CANVAS);
-		palco.setHeight(ALTURA_CANVAS);
+		palco.setWidth(LARGURA_PALCO);
+		palco.setHeight(ALTURA_PALCO);
 		palco.setResizable(false);
 
 		//criando Canvas
-		canvas = new Canvas(palco.getWidth()-230, palco.getHeight()-150);
+		canvas = new Canvas(LARGURA_CANVAS, ALTURA_CANVAS);
 
 		//criando canvas pequeno
 		BorderPane paneLittle = new BorderPane();
+		paneLittle.setMaxWidth(LARGURA_CANVAS_LITTLE);
+		paneLittle.setMinWidth(LARGURA_CANVAS_LITTLE);
 		paneLittle.setBackground(new Background(new BackgroundFill(Color.WHITE, CornerRadii.EMPTY, Insets.EMPTY)));
-		canvasLittle = new Canvas(208, 145); // proporçao: divide o maior por 4,8
+		canvasLittle = new Canvas(LARGURA_CANVAS_LITTLE, ALTURA_CANVAS_LITTLE); // proporçao: divide o maior por 5
 		paneLittle.setCenter(canvasLittle);
 
 
@@ -90,32 +107,35 @@ public class TelaPrincipal {
         BorderPane pane = new BorderPane();
         
         //Criando Menu
-        menu = montarMenuOpcoesButton();
-		menu.getChildren().addAll(paneLittle);
-		menu.setMaxWidth(230);
-		menu.setMinWidth(230);
+        menuAcoes = montarMenuOpcoesButton();
+		menuAcoes.getChildren().addAll(paneLittle);
+		menuAcoes.setMaxWidth(LARGURA_MENU);
+		menuAcoes.setMinWidth(LARGURA_MENU);
 
-    	        
+
     	// atributos do painel
         pane.setBackground(new Background(new BackgroundFill(Color.WHITE, CornerRadii.EMPTY, Insets.EMPTY)));
-        pane.setCenter(canvas); // posiciona o componente de desenho
-        pane.setRight(menu);
+        pane.setCenter(canvas);
+        pane.setRight(menuAcoes);
     	atribuirEventosAosComponentesGraficos();
+
         // cria e insere cena
         Scene scene = new Scene(pane);
         palco.setScene(scene);
         palco.show();
 		
 	}
+
     private VBox montarMenuOpcoesButton(){
         VBox menuTemp = new VBox();
 		menuTemp.getChildren().addAll(new Label("Desenho Ponto a Ponto "), criarPrimeiraLinha());
         menuTemp.getChildren().addAll(new Label("Desenho Figuras"), criarSegundaLinha());
         menuTemp.getChildren().addAll(new Label("Desenho Figuras Elástica"), criarTerceiraLinha(), criarQuartaLinha());
-        menuTemp.getChildren().addAll(new Label("Clipping "), criarQuintaLinha(), criarSextaLinha());
+        menuTemp.getChildren().addAll(new Label("Clipping "), criarQuintaLinha());
         menuTemp.getChildren().addAll(new Label("Arquivo "), criarArquivoLinha());
         menuTemp.getChildren().addAll(new Label("Opções "), criarOpcoesLinha()/*, criarUndoRedoLinha()*/);
-        menuTemp.getChildren().addAll(criarOpcaoCor(), criarOpcaoEspessura());
+		menuTemp.getChildren().addAll(new Label("Filtros "), criarLinhaFiltros());
+		menuTemp.getChildren().addAll(new Label(""), criarOpcaoCor(), criarOpcaoEspessura());
 		menuTemp.setSpacing(10);
 
 		menuTemp.setBackground(new Background(new BackgroundFill(Color.LIGHTGREY, CornerRadii.EMPTY, Insets.EMPTY)));
@@ -162,7 +182,8 @@ public class TelaPrincipal {
 		menuClipping.setSpacing(10);
 		selecionarAreaClipping = criarButton("Selecionar");
 		desfazerSelecaoClipping = criarButton("Deselecionar");
-		menuClipping.getChildren().addAll(selecionarAreaClipping, desfazerSelecaoClipping);
+		clipping = criarButton("Recortar");
+		menuClipping.getChildren().addAll(selecionarAreaClipping, desfazerSelecaoClipping, clipping);
 		return menuClipping;
 	}
 	private HBox criarSextaLinha(){
@@ -172,7 +193,6 @@ public class TelaPrincipal {
 		menuClipping2.getChildren().addAll(clipping);
 		return menuClipping2;
 	}
-
 	private HBox criarArquivoLinha(){
 		HBox menuArquivo = new HBox();
 		menuArquivo.setSpacing(10);
@@ -181,7 +201,6 @@ public class TelaPrincipal {
 		menuArquivo.getChildren().addAll(abrirArquivo, salvarArquivo);
 		return menuArquivo;
 	}
-
 	private HBox criarOpcoesLinha(){
 		HBox menuOpcoes = new HBox();
 		menuOpcoes.setSpacing(10);
@@ -189,6 +208,16 @@ public class TelaPrincipal {
 		redesenhar = criarButton("Redesenhar");
 		menuOpcoes.getChildren().addAll(limpar, redesenhar);
 		return menuOpcoes;
+	}
+
+	private HBox criarLinhaFiltros(){
+		HBox menuFiltros = new HBox();
+		menuFiltros.setSpacing(10);
+		filtroAlta = criarButton("Alta");
+		filtroBaixa = criarButton("Baixa");
+		filtroCinza = criarButton("Cinzas");
+		menuFiltros.getChildren().addAll(filtroAlta, filtroBaixa, filtroCinza);
+		return menuFiltros;
 	}
 
     private Button criarButton(String text){
@@ -223,8 +252,7 @@ public class TelaPrincipal {
 		hbox.getChildren().addAll(new Label("Espessura: "), diametroLinhas);
 		return hbox;
 	}
-	
-	// Vincula??o dos componentes do MENU aos eventos declarados no ControladorDeEventos de componentes grasficos.
+
 	private void atribuirEventosAosComponentesGraficos() {
 		// menu
         this.pontos.setOnAction(e -> {
@@ -240,18 +268,22 @@ public class TelaPrincipal {
 			controladorDeEventos.setTipoDesenho(TipoDesenho.CURVA_DO_DRAGAO);
 		});
 		this.opcaoGeral.setOnAction(e -> {
-			controladorDeEventos.setTipoDesenho(TipoDesenho.CURVA_DO_DRAGAO);
+			controladorDeEventos.setTipoDesenho(TipoDesenho.OPCAO_GERAL);
 		});
 
-        this.limpar.setOnAction(e -> {
-            AlertaPersonalizado.criarAlertaComCallback("A execucao dessa operacao resulta na perda de todos os dados desenhados.\n "
-					+ "Deseja continuar?", new AlertaCallback() {				
-						@Override
-						public void alertaCallbak() {
-							controladorDeEventos.limparCanvas();
-						}
-					});
-        });
+		this.limpar.setOnAction(e -> {
+			AlertaPersonalizado.criarAlertaComCallback("A execucao dessa operacao resulta na perda de todos os dados desenhados.\n "
+					+ "Deseja continuar?", new AlertaCallback() {
+				@Override
+				public void alertaCallbak() {
+					controladorDeEventos.limparCanvas();
+				}
+			});
+		});
+
+		this.redesenhar.setOnAction(e -> {
+			controladorDeEventos.redesenhar();
+		});
         this.retaElastica.setOnAction(e -> {
 			controladorDeEventos.setTipoDesenho(TipoDesenho.RETA_ELASTICA);
 		});
@@ -306,7 +338,6 @@ public class TelaPrincipal {
 							Reta.class,
 							Circulo.class,
 							Poligono.class,
-							LinhaPoligonal.class,
 							PontoGr.class
 					});
 				} catch (Exception e) {
@@ -314,6 +345,19 @@ public class TelaPrincipal {
 				}
 			}
 		});
+
+		filtroAlta.setOnAction(event -> {
+			controladorDeEventos.onFiltro(TipoFiltro.ALTA);
+		});
+
+		filtroBaixa.setOnAction(event -> {
+			controladorDeEventos.onFiltro(TipoFiltro.BAIXA);
+		});
+
+		filtroCinza.setOnAction(event -> {
+			controladorDeEventos.onFiltro(TipoFiltro.CINZA);
+		});
+
 
 		// canvas
 		canvas.setOnMouseMoved(event -> {
@@ -351,14 +395,13 @@ public class TelaPrincipal {
 						LinhaPoligonal.class,
 						PontoGr.class
 				});
-				//desenhando objetos obtidos
-				this.controladorDeEventos.getDesenhador().setObjetosDesenhados(
-						figura.getObjetosDesenhados()
-				);					
+				this.controladorDeEventos.getDesenhador().setObjetosDesenhados(figura.getObjetosDesenhados());
 				this.controladorDeEventos.getDesenhador().desenharObjetosArmazenados(null);
+				this.controladorDeEventos.salvarCanvas();
 			} catch (Exception e) {
 				e.printStackTrace();
 			}
 		}
 	}
+
 }

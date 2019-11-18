@@ -32,23 +32,19 @@ public class RetaCalculador {
 		}
 
 		if (deltaX == 0) {
-			// TODO: Loop que só anda no y: Linha vertical
 			for (int y = y1; y <= y2; y++) {
 				pontos.add(new Ponto(x1, y));
 			}
 		} else if (deltaY == 0) {
-			// TODO: Loop que só anda no x: Linha horizontal
 			for (int x = x1; x <= x2; x++) {
 				pontos.add(new Ponto(x, y1));
 			}
 		} else if (deltaX > deltaY) {
-			// TODO: Loop que usa o x para achar o y
 			for (int x = x1; x <= x2; x++) {
 				int y_atual = (int) Math.floor(m * x + b);
 				pontos.add(new Ponto(x, y_atual));
 			}
 		} else {
-			// TODO: Loop que usa o y para achar o x
 			for (int y = y1; y <= y2; y++) {
 				int x_atual = (int) Math.floor((y - b) / m);
 				pontos.add(new Ponto(x_atual, y));
@@ -119,15 +115,5 @@ public class RetaCalculador {
 		}
 
 		return pontos;
-	}
-	
-	// Verifica se ponto pertence a reta mas n�o ao segmento desenhado
-	private static boolean validaDistanciaPontoSegmentorDeReta(Ponto pt, Reta reta) {
-		
-		double tamanhoReta = CalculadorGenerico.obterDistanciaEntreDoisPontos(reta.getA(), reta.getB());
-		double distanciaPontoA = CalculadorGenerico.obterDistanciaEntreDoisPontos(pt, reta.getA());
-		double distanciaPontoB = CalculadorGenerico.obterDistanciaEntreDoisPontos(pt, reta.getB());
-		boolean distanciaValida = (distanciaPontoA > tamanhoReta || distanciaPontoB > tamanhoReta ) ? false : true;		
-		return distanciaValida;
 	}
 }

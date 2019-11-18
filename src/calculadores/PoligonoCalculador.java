@@ -6,18 +6,14 @@ import java.util.List;
 import primitivos.Poligono;
 import primitivos.Ponto;
 import primitivos.Reta;
-import primitivos.Retangulo;
 
 public class PoligonoCalculador {
 	
 	public static List<Ponto> obterPontos(Poligono poligono) {
-		
 		List<Ponto> pontos = new ArrayList<Ponto>();
-		
 		for (Reta reta : poligono.getRetas()) {
 			pontos.addAll(RetaCalculador.obterPontos(reta));
 		}
-		
 		return pontos;
 	}
 }

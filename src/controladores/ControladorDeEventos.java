@@ -1,9 +1,10 @@
 package controladores;
 
+import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
-import calculadores.CurvaDoDragaoCalculador;
-import calculadores.RetaCalculador;
+import calculadores.*;
 import gui.Desenhador;
 import javafx.scene.SnapshotParameters;
 import javafx.scene.canvas.Canvas;
@@ -14,10 +15,7 @@ import javafx.scene.image.WritableImage;
 import javafx.scene.input.MouseButton;
 import javafx.scene.input.MouseEvent;
 import javafx.scene.paint.Color;
-import primitivos.LinhaPoligonal;
-import primitivos.Poligono;
-import primitivos.Ponto;
-import primitivos.Reta;
+import primitivos.*;
 
 public class ControladorDeEventos {
 
@@ -57,7 +55,6 @@ public class ControladorDeEventos {
 	}
 	
 	private void onMousePressedPrimitivosBasicos(Ponto pt) {
-
 		if (pontoAtual == null) {
 			pontoAtual = pt;
 		} else {
@@ -98,10 +95,8 @@ public class ControladorDeEventos {
 	public void onMouseDraggedPrimitivosElasticos(MouseEvent event) {
 		if (event.getButton() == MouseButton.PRIMARY) {
 			if (!fimElastico) {
-				// Seta canvas para estado capturado quando o mouse foi pressionado
 				canvas.getGraphicsContext2D().drawImage(backup, 0, 0);
 				canvasLittle.getGraphicsContext2D().drawImage(backupLittle, 0, 0);
-				// Desenha sobre o "estado" capturado quando mouse foi pressionado		
 				Ponto ptFinal = new Ponto(event.getX(), event.getY());
 				this.desenhador.desenharPrimitivoElastico(pontoAtual,ptFinal, tipoDesenho, fimElastico);
 				fimElastico = false;
@@ -113,15 +108,129 @@ public class ControladorDeEventos {
 		if (event.getButton() == MouseButton.PRIMARY) {
 			if (!fimElastico) {
 				Ponto ptFinal = new Ponto(event.getX(), event.getY());
-				//Atualiza se n�o estiver desenhando poligono elastico 
 				fimElastico =  !isPoligonoElastico();
 				this.desenhador.desenharPrimitivoElastico(pontoAtual,ptFinal,tipoDesenho, (fimElastico || isPoligonoElastico()) );
-				//Se estiver desenhando poligono elastico, precisa usar o ultimo ponto para desenhar a proxima reta
 				pontoAtual = (isPoligonoElastico()) ? ptFinal : null;
 			}
 		}
 	}
-	
+
+	private void desenharOpcaoGeral(Ponto pontoMedio) {
+		int raio = 100;
+
+		List<Circulo> circulosCircunferencia = new ArrayList<>();
+		Circulo circuloCentral = new Circulo(raio, pontoMedio, Color.GREEN);
+		circulosCircunferencia.add(circuloCentral);
+
+		List<Ponto> pontos = determinarPontos(pontoMedio, raio);
+		desenharPontosDesenhoGeral(pontos);
+
+		circulosCircunferencia.addAll(determinarCirculos(pontos, raio));
+		desenharCirculosDesenhoGeral(circulosCircunferencia);
+
+		List<Reta> retas = determinarRetasCirculoCentral(pontoMedio, pontos);
+		desenharRetasDesenhoGeral(retas);
+
+		List<Ponto> pontosExtremos = determinarPontosExtremos(pontoMedio, raio);
+		desenharPontosDesenhoGeral(pontosExtremos);
+
+		List<Reta> retasExtremas = determinarRetasExtremas(pontoMedio, pontosExtremos);
+		desenharRetasDesenhoGeral(retasExtremas);
+
+		List<Reta> retasExtremas2 = determinarRetasExtremas2(pontosExtremos);
+		desenharRetasDesenhoGeral(retasExtremas2);
+
+		this.desenhador.setCor(Color.BLACK);
+	}
+
+	private List<Ponto> determinarPontos(Ponto pontoMedio, int raio){
+		List<Ponto> pontos = new ArrayList<>();
+		pontos.add(new Ponto(pontoMedio.getx() + 100, pontoMedio.gety())); //leste
+		pontos.add(new Ponto(pontoMedio.getx() + 50, pontoMedio.gety()-raio+12)); //nordeste
+		pontos.add(new Ponto(pontoMedio.getx() - 50, pontoMedio.gety()-raio+12)); //noroeste
+		pontos.add(new Ponto(pontoMedio.getx() - 100, pontoMedio.gety())); //oeste
+		pontos.add(new Ponto(pontoMedio.getx() - 50, pontoMedio.gety()+raio-12)); //sudoeste
+		pontos.add(new Ponto(pontoMedio.getx() + 50, pontoMedio.gety()+raio-12)); //sudeste
+		return pontos;
+	}
+
+	private void desenharPontosDesenhoGeral(List<Ponto> pontos){
+		for(Ponto ponto : pontos){
+			this.desenhador.setCor(Color.BLUE);
+			this.desenhador.desenharPonto((int) Math.floor(ponto.getx()), (int) Math.floor(ponto.gety()), "", desenhador.getCor());
+		}
+	}
+
+	private List<Circulo> determinarCirculos(List<Ponto> pontos, int raio){
+		List<Circulo> circulos = new ArrayList<>();
+		for(Ponto ponto : pontos){
+			circulos.add(new Circulo(raio, ponto, Color.GREEN));
+		}
+		return circulos;
+	}
+
+	private void desenharCirculosDesenhoGeral(List<Circulo> circulos){
+		for(Circulo circulo : circulos){
+			this.desenhador.setCor(Color.GREEN);
+			this.desenhador.desenharPontos(CirculoCalculador.obterPontosAlgoritmoMidPoint(circulo), desenhador.getCor());
+		}
+	}
+
+	private List<Reta> determinarRetasCirculoCentral(Ponto pontoMedio, List<Ponto> pontos){
+		List<Reta> retas = new ArrayList<>();
+		for(Ponto ponto : pontos){
+			retas.add(new Reta(pontoMedio, ponto, Color.RED));
+		}
+		return retas;
+	}
+
+	private void desenharRetasDesenhoGeral(List<Reta> retas){
+		for(Reta reta : retas){
+			this.desenhador.setCor(Color.RED);
+			this.desenhador.desenharPontos(RetaCalculador.obterPontos(reta), desenhador.getCor());
+		}
+	}
+
+	private List<Ponto> determinarPontosExtremos(Ponto pontoMedio, int raio){
+		List<Ponto> pontos = new ArrayList<>();
+		pontos.add(new Ponto(pontoMedio.getx(), pontoMedio.gety() - 175)); //norte
+		pontos.add(new Ponto(pontoMedio.getx() - 150, pontoMedio.gety()-raio+12)); //noroeste
+		pontos.add(new Ponto(pontoMedio.getx() - 150, pontoMedio.gety()+raio-12)); //suldoeste
+		pontos.add(new Ponto(pontoMedio.getx(), pontoMedio.gety() + 175)); //sul
+		pontos.add(new Ponto(pontoMedio.getx() + 150, pontoMedio.gety()+raio-12)); //suldeste
+		pontos.add(new Ponto(pontoMedio.getx() + 150, pontoMedio.gety()-raio+12)); //nordeste
+		return pontos;
+	}
+
+	private List<Reta> determinarRetasExtremas(Ponto pontoMedio, List<Ponto> pontos){
+		List<Reta> retas = new ArrayList<>();
+		for(Ponto ponto : pontos){
+			retas.add(new Reta(pontoMedio, ponto, Color.RED));
+		}
+		return retas;
+	}
+
+	private List<Reta> determinarRetasExtremas2(List<Ponto> pontos){
+		List<Reta> retas = new ArrayList<>();
+
+		retas.add(new Reta(pontos.get(0), pontos.get(5), Color.RED));
+		retas.add(new Reta(pontos.get(1), pontos.get(0), Color.RED));
+		retas.add(new Reta(pontos.get(2), pontos.get(1), Color.RED));
+		retas.add(new Reta(pontos.get(3), pontos.get(2), Color.RED));
+		retas.add(new Reta(pontos.get(4), pontos.get(3), Color.RED));
+		retas.add(new Reta(pontos.get(5), pontos.get(4), Color.RED));
+
+		retas.add(new Reta(pontos.get(0), pontos.get(4), Color.RED));
+		retas.add(new Reta(pontos.get(4), pontos.get(2), Color.RED));
+		retas.add(new Reta(pontos.get(2), pontos.get(0), Color.RED));
+
+		retas.add(new Reta(pontos.get(3), pontos.get(5), Color.RED));
+		retas.add(new Reta(pontos.get(5), pontos.get(1), Color.RED));
+		retas.add(new Reta(pontos.get(1), pontos.get(3), Color.RED));
+
+		return retas;
+	}
+
 	private void desenharCurvaDoDragao() {
 		if (iteracoesCurvaDragao <= 17) {
 			preencherCanvasCurvaDoDragao();
@@ -156,6 +265,9 @@ public class ControladorDeEventos {
 		if (event.getButton() == MouseButton.PRIMARY ) {			
 			//Definir qual desenho ser� feito
 			switch (tipoDesenho) {
+				case OPCAO_GERAL:
+					desenharOpcaoGeral(pontoClicado);
+					break;
 				case CURVA_DO_DRAGAO:
 					desenharCurvaDoDragao();
 					break;
@@ -177,7 +289,6 @@ public class ControladorDeEventos {
 					break;
 			}
 		}else if(event.getButton() == MouseButton.SECONDARY && this.desenhador.isPoligonoElasticoEmDesenho()){
-			// Captura clique com o bot�o secund�rio do mouse quando usuario est� desenhando poligonos
 			switch (tipoDesenho) {
 				case POLIGONO_ELASTICO:
 					Ponto ptInicio = this.desenhador.getPoligonoEmDesenho().getRetas().get(0).getA();
@@ -197,7 +308,7 @@ public class ControladorDeEventos {
 		tipoDesenho = desenho;
 		resetCanvas();
 	}
-	
+
 	public void limparCanvas() {
 		canvas.getGraphicsContext2D().clearRect(0, 0, canvas.getWidth(), canvas.getHeight());
 		canvasLittle.getGraphicsContext2D().clearRect(0, 0, canvasLittle.getWidth(), canvasLittle.getHeight());
@@ -206,12 +317,16 @@ public class ControladorDeEventos {
 		resetPoligonoEmDesenho();
 	}
 
-	private void salvarCanvas(){
-		// Capturando estado do canvas para desenhar sobre ele
+	public void redesenhar() {
+		canvas.getGraphicsContext2D().drawImage(backup,0,0);
+		canvasLittle.getGraphicsContext2D().drawImage(backupLittle,0,0);
+	}
+
+	public void salvarCanvas(){
 		SnapshotParameters params = new SnapshotParameters();
 		params.setFill(Color.WHITE);
-		backup = canvas.snapshot(params, backup);
-		backupLittle = canvasLittle.snapshot(params, backupLittle);
+		this.backup = canvas.snapshot(params, backup);
+		this.backupLittle = canvasLittle.snapshot(params, backupLittle);
 	}
 	
 	public void recortar(){
@@ -248,5 +363,92 @@ public class ControladorDeEventos {
 		} 
 		this.desenhador.desenharObjetosArmazenados(null);
 	}
-	
+
+	public void onFiltro(TipoFiltro filtro){
+		//limpa canvas
+		canvas.getGraphicsContext2D().clearRect(0, 0, canvas.getWidth(), canvas.getHeight());
+		canvasLittle.getGraphicsContext2D().clearRect(0, 0, canvasLittle.getWidth(), canvasLittle.getHeight());
+
+		//seta nova cor nos objetos desenhados
+		Map<TipoPrimitivo, List<Object>> objetosDesenhados = this.desenhador.getObjetosDesenhados();
+		changeColor(objetosDesenhados, filtro);
+
+		//atualiza objeto em desenhador, desenha objetos e salva
+		this.getDesenhador().setObjetosDesenhados(objetosDesenhados);
+		this.getDesenhador().desenharObjetosArmazenados(null);
+		this.salvarCanvas();
+	}
+
+	private void changeColor(Map<TipoPrimitivo, List<Object>> objetosDesenhados, TipoFiltro filtro){
+
+		objetosDesenhados.forEach((tipoPrimitivo, objetos) -> {
+			for(Object desenho : objetos){
+				Color cor = onPickColorOfFigura(tipoPrimitivo, desenho);
+				cor = onChangeColorOfFigura(filtro, cor);
+				onPutColorOfFigura(tipoPrimitivo, desenho, cor);
+			}
+		});
+
+	}
+
+	private Color onPickColorOfFigura(TipoPrimitivo tipoPrimitivo, Object desenho){
+		Color cor;
+
+		switch (tipoPrimitivo) {
+			case RETA:
+				Reta reta = (Reta) desenho;
+				cor = reta.getCor() ;
+				break;
+			case RETANGULO:
+				Retangulo retangulo = (Retangulo) desenho;
+				cor = retangulo.getCor() ;
+				break;
+			case POLIGONO:
+			case LINHA_POLIGONAL:
+				Poligono poligono = (Poligono) desenho;
+				cor = poligono.getCor() ;
+				break;
+			case CIRCULO:
+				Circulo circulo = (Circulo) desenho;
+				cor = circulo.getCor() ;
+				break;
+			default:
+				cor = Color.WHITE;
+				break;
+		}
+
+		return cor;
+	}
+
+	private Color onChangeColorOfFigura(TipoFiltro filtro, Color cor){
+		if(filtro.equals(TipoFiltro.ALTA)) {
+			return cor.darker();
+		} else if(filtro.equals(TipoFiltro.BAIXA)){
+			return cor.brighter();
+		}
+		return cor.grayscale();
+	};
+
+	private void onPutColorOfFigura(TipoPrimitivo tipoPrimitivo, Object desenho, Color cor){
+		switch (tipoPrimitivo) {
+			case RETA:
+				Reta reta = (Reta) desenho;
+				reta.setCor(cor) ;
+				break;
+			case RETANGULO:
+				Retangulo retangulo = (Retangulo) desenho;
+				retangulo.setCor(cor) ;
+				break;
+			case POLIGONO:
+			case LINHA_POLIGONAL:
+				Poligono poligono = (Poligono) desenho;
+				poligono.setCor(cor) ;
+				break;
+			case CIRCULO:
+				Circulo circulo = (Circulo) desenho;
+				circulo.setCor(cor) ;
+				break;
+		}
+	}
+
 }
