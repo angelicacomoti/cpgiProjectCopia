@@ -133,7 +133,7 @@ public class TelaPrincipal {
         VBox menuTemp = new VBox();
 		menuTemp.getChildren().addAll(new Label("Desenho Ponto a Ponto "), criarPrimeiraLinha());
         menuTemp.getChildren().addAll(new Label("Desenho Figuras"), criarSegundaLinha());
-        menuTemp.getChildren().addAll(new Label("Desenho Figuras Elástica"), criarTerceiraLinha(), criarQuartaLinha());
+        menuTemp.getChildren().addAll(new Label("Desenho Figuras Elástica"), criarTerceiraLinha()/**, criarQuartaLinha()**/);
         menuTemp.getChildren().addAll(new Label("Clipping "), criarQuintaLinha());
         menuTemp.getChildren().addAll(new Label("Arquivo "), criarArquivoLinha());
         menuTemp.getChildren().addAll(new Label("Opções "), criarOpcoesLinha());
@@ -306,12 +306,13 @@ public class TelaPrincipal {
 		this.retanguloElastico.setOnAction(e -> {
 			controladorDeEventos.setTipoDesenho(TipoDesenho.RETANGULO_ELASTICO);
 		});
-		this.poligonoElastico.setOnAction(e -> {
+
+		/**this.poligonoElastico.setOnAction(e -> {
 			controladorDeEventos.setTipoDesenho(TipoDesenho.POLIGONO_ELASTICO);
 		});
 		this.retaPoligonalElastica.setOnAction(e -> {
 			controladorDeEventos.setTipoDesenho(TipoDesenho.RETA_POLIGONAL);
-		});
+		});*/
 
 		this.selecionarAreaClipping.setOnAction(ev -> {
 			this.controladorDeEventos.setTipoDesenho(TipoDesenho.SELECIONAR_AREA_CLIPPING);
