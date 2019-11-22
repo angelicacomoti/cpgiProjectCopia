@@ -34,6 +34,9 @@ public class TelaPrincipal {
 	private Button filtroAlta;
 	private Button filtroBaixa;
 	private Button filtroCinza;
+	private Button filtroInverte;
+	private Button filtroIluminado;
+	private Button filtroEscurecido;
 
 	private Button pontos;
 	private Button retas;
@@ -133,8 +136,8 @@ public class TelaPrincipal {
         menuTemp.getChildren().addAll(new Label("Desenho Figuras Elástica"), criarTerceiraLinha(), criarQuartaLinha());
         menuTemp.getChildren().addAll(new Label("Clipping "), criarQuintaLinha());
         menuTemp.getChildren().addAll(new Label("Arquivo "), criarArquivoLinha());
-        menuTemp.getChildren().addAll(new Label("Opções "), criarOpcoesLinha()/*, criarUndoRedoLinha()*/);
-		menuTemp.getChildren().addAll(new Label("Filtros "), criarLinhaFiltros());
+        menuTemp.getChildren().addAll(new Label("Opções "), criarOpcoesLinha());
+		menuTemp.getChildren().addAll(new Label("Filtros "), criarLinhaFiltros(), criarSegundaLinhaFiltros());
 		menuTemp.getChildren().addAll(new Label(""), criarOpcaoCor(), criarOpcaoEspessura());
 		menuTemp.setSpacing(10);
 
@@ -216,7 +219,17 @@ public class TelaPrincipal {
 		filtroAlta = criarButton("Alta");
 		filtroBaixa = criarButton("Baixa");
 		filtroCinza = criarButton("Cinzas");
-		menuFiltros.getChildren().addAll(filtroAlta, filtroBaixa, filtroCinza);
+		filtroInverte = criarButton("Inverte");
+		menuFiltros.getChildren().addAll(filtroAlta, filtroBaixa, filtroCinza, filtroInverte);
+		return menuFiltros;
+	}
+
+	private HBox criarSegundaLinhaFiltros(){
+		HBox menuFiltros = new HBox();
+		menuFiltros.setSpacing(10);
+		filtroIluminado = criarButton("Iluminar");
+		filtroEscurecido = criarButton("Escurecer");
+		menuFiltros.getChildren().addAll(filtroIluminado, filtroEscurecido);
 		return menuFiltros;
 	}
 
@@ -356,6 +369,18 @@ public class TelaPrincipal {
 
 		filtroCinza.setOnAction(event -> {
 			controladorDeEventos.onFiltro(TipoFiltro.CINZA);
+		});
+
+		filtroInverte.setOnAction(event -> {
+			controladorDeEventos.onFiltro(TipoFiltro.INVERTE);
+		});
+
+		filtroIluminado.setOnAction(event -> {
+			controladorDeEventos.onFiltro(TipoFiltro.ILUMINAR);
+		});
+
+		filtroEscurecido.setOnAction(event -> {
+			controladorDeEventos.onFiltro(TipoFiltro.ESCURECER);
 		});
 
 

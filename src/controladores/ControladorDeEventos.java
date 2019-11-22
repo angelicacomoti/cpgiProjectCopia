@@ -422,9 +422,15 @@ public class ControladorDeEventos {
 
 	private Color onChangeColorOfFigura(TipoFiltro filtro, Color cor){
 		if(filtro.equals(TipoFiltro.ALTA)) {
-			return cor.darker();
+			return cor.saturate();
 		} else if(filtro.equals(TipoFiltro.BAIXA)){
+			return cor.desaturate();
+		} else if(filtro.equals(TipoFiltro.INVERTE)){
+			return cor.invert();
+		} else if(filtro.equals(TipoFiltro.ILUMINAR)){
 			return cor.brighter();
+		} else if(filtro.equals(TipoFiltro.ESCURECER)){
+			return cor.darker();
 		}
 		return cor.grayscale();
 	};
